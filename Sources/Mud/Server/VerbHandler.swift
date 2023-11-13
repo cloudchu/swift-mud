@@ -8,11 +8,6 @@
 import Foundation
 import NIO
 
-//struct VerbCommand {
-//    let session: Session
-//    let verb: Verb
-//}
-
 final class VerbHandler: ChannelInboundHandler {
     static let commandFactory = MudCommandFactory()
     
@@ -23,7 +18,7 @@ final class VerbHandler: ChannelInboundHandler {
 //        logger.trace("\(self) \(#function)")
         print("verb read")
         
-        let textCommand = unwrapInboundIn(data)
+        let textCommand = self.unwrapInboundIn(data)
         
         let mudCommand = Self.commandFactory.createMudcommand(from: textCommand.command, session: textCommand.session)
         

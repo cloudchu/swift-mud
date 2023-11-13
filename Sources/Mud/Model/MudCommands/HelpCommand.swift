@@ -26,7 +26,7 @@ struct HelpCommand: MudCommand {
             """
     
     static var token = "help"
-    static var expectedArugmentCount: Int = 0
+    static var expectedArgumentCount: Int = 0
     static var requiresLogin: Bool = false
     
     let session: Session

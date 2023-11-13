@@ -7,7 +7,7 @@
 
 struct EmptyCommand: MudCommand {
     static let token = "empty"
-    static let expectedArugmentCount = 0
+    static let expectedArgumentCount = 0
     static let requiresLogin = false
     
     let session: Session

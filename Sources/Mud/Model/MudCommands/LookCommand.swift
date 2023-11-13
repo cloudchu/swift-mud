@@ -7,7 +7,7 @@
 
 struct LookCommand: MudCommand {
     static let token: String = "look"
-    static let  expectedArugmentCount: Int = 0
+    static let  expectedArgumentCount: Int = 0
     static let requiresLogin: Bool = true
     
     var session: Session

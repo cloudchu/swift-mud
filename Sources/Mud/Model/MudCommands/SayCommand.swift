@@ -7,14 +7,14 @@
 
 struct SayCommand: MudCommand {
     static let token = "say"
-    static let expectedArugmentCount: Int = 1
+    static let expectedArgumentCount: Int = 1
     static let requiresLogin: Bool = true
     
     let session: Session
     let sentence: String
     
     static func create(_ arguments: [String], session: Session) -> SayCommand? {
-        guard arguments.count >= expectedArugmentCount else {
+        guard arguments.count >= expectedArgumentCount else {
             return nil
         }
         

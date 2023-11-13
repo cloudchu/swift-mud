@@ -7,14 +7,14 @@
 
 struct GoCommand: MudCommand {
     static var token = "go"
-    static var expectedArugmentCount: Int = 1
+    static var expectedArgumentCount: Int = 1
     static var requiresLogin: Bool = true
     
     let session: Session
     let direction: Direction
     
     static func create(_ arguments: [String], session: Session) -> GoCommand? {
-        guard arguments.count >= expectedArugmentCount else {
+        guard arguments.count >= expectedArgumentCount else {
             return nil
         }
         
@@ -56,7 +56,7 @@ struct GoCommand: MudCommand {
         player.currentRoomID = exit.targetRoomID
         await player.save()
         
-        let enterMessages = await sendMessageToOtherPlayersInRoom(message: "\(player.username) enter the room", player: player)
+        let enterMessages = await sendMessageToOtherPlayersInRoom(message: "\(player.username) entered the room", player: player)
         
         
         response.append(contentsOf: enterMessages)

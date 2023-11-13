@@ -70,7 +70,7 @@ actor AwesomeDB<DatabaseType: DBType> {
                 }
             }
         } else {
-            print("File \(filename) not found")
+            print("File \(filename) not found.")
         }
         
         return []

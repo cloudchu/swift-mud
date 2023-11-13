@@ -7,7 +7,7 @@
 
 struct IllegalCommand: MudCommand {
     static let  token: String = "illegal"
-    static let  expectedArugmentCount: Int = 0
+    static let  expectedArgumentCount: Int = 0
     static let requiresLogin: Bool = false
     
     let session: Session

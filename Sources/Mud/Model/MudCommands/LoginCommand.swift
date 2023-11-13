@@ -7,7 +7,7 @@
 
 struct LoginCommand: MudCommand {
     static var token = "login"
-    static var expectedArugmentCount: Int = 2
+    static var expectedArgumentCount: Int = 2
     static let requiresLogin: Bool = false
     
     
@@ -16,7 +16,7 @@ struct LoginCommand: MudCommand {
     let password: String
     
     static func create(_ arguments: [String], session: Session) -> LoginCommand? {
-        guard arguments.count >= expectedArugmentCount else {
+        guard arguments.count >= expectedArgumentCount else {
             return nil
         }
         
@@ -34,7 +34,7 @@ struct LoginCommand: MudCommand {
             updatedSession.playerID = existingUser.id
             response = MudResponse(session: updatedSession, message: "Welcome back, \(existingUser.username)!")
             if existingUser.currentRoomID != nil {
-                notifications = await sendMessageToOtherPlayersInRoom(message: "\(existingUser.username) enter the room.", player: existingUser)
+                notifications = await sendMessageToOtherPlayersInRoom(message: "\(existingUser.username) entered the room.", player: existingUser)
             }
         } catch {
             response = MudResponse(session: updatedSession, message: "Error logging in user: \(error)")

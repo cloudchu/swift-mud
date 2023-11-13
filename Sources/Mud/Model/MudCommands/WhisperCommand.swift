@@ -7,7 +7,7 @@
 
 struct WhisperCommand: MudCommand {
     static let token = "whisper"
-    static let expectedArugmentCount: Int = 2
+    static let expectedArgumentCount: Int = 2
     static let requiresLogin: Bool = true
     
     let session: Session
@@ -15,7 +15,7 @@ struct WhisperCommand: MudCommand {
     let message: String
     
     static func create(_ arguments: [String], session: Session) -> WhisperCommand? {
-        guard arguments.count >= expectedArugmentCount else {
+        guard arguments.count >= expectedArgumentCount else {
             return nil
         }
         

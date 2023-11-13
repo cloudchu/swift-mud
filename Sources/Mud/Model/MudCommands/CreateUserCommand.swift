@@ -7,7 +7,7 @@
 
 struct CreateUserCommand: MudCommand {
     static let token = "create_user"
-    static let expectedArugmentCount = 2
+    static let expectedArgumentCount = 2
     static let requiresLogin = false
     
     let session: Session
@@ -15,7 +15,7 @@ struct CreateUserCommand: MudCommand {
     let password: String
     
     static func create(_ arguments: [String], session: Session) -> CreateUserCommand? {
-        guard arguments.count >= expectedArugmentCount else {
+        guard arguments.count >= expectedArgumentCount else {
             return nil
         }
         return CreateUserCommand(session: session, username: arguments[0], password: arguments[1])
@@ -30,7 +30,7 @@ struct CreateUserCommand: MudCommand {
             updatedSession.playerID = newUser.id
             response = MudResponse(session: updatedSession, message: "Welcome, \(newUser.username)!")
         } catch {
-            response = MudResponse(session: updatedSession, message: "Error create user: \(error)")
+            response = MudResponse(session: updatedSession, message: "Error creating user: \(error)")
         }
         
         return [response]

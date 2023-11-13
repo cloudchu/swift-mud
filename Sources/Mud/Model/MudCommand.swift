@@ -12,7 +12,7 @@ struct MudResponse {
 
 protocol MudCommand {
     static var token: String { get }
-    static var expectedArugmentCount: Int { get }
+    static var expectedArgumentCount: Int { get }
     static var requiresLogin: Bool { get }
     
     var session: Session { get }
@@ -28,7 +28,7 @@ extension MudCommand {
     }
     
     var couldNotFindPlayerMessage: String {
-        "Could not find player with id \(String(describing: session.playerID))"
+        "Could not find player with id \(String(describing: session.playerID))."
     }
 }
 

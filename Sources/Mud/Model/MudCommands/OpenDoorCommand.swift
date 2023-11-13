@@ -7,14 +7,14 @@
 
 struct OpenDoorCommand: MudCommand {
     static let token = "open_door"
-    static let expectedArugmentCount: Int = 1
+    static let expectedArgumentCount: Int = 1
     static let requiresLogin: Bool = true
     
     let session: Session
     let direction: Direction
     
     static func create(_ arguments: [String], session: Session) -> OpenDoorCommand? {
-        guard arguments.count >= expectedArugmentCount else {
+        guard arguments.count >= expectedArgumentCount else {
             return nil
         }
         

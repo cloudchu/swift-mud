@@ -7,7 +7,7 @@
 
 struct CloseCommand: MudCommand {
     static let token = "close"
-    static let expectedArugmentCount: Int = 0
+    static let expectedArgumentCount: Int = 0
     static let requiresLogin: Bool = false
     
     let session: Session

@@ -7,6 +7,7 @@
 
 import Foundation
 import NIO
+import NIOSSH
 
 struct MudSession: Session {
     let id: UUID
@@ -23,21 +24,24 @@ struct TextCommand {
 
 
 final class SessionHandler: ChannelInboundHandler {
-    typealias InboundIn = ByteBuffer
+    typealias InboundIn = SSHChannelData
     typealias InboundOut = TextCommand
-    typealias OutboundOut = ByteBuffer
+    typealias OutboundOut = SSHChannelData
     
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         //        logger.trace("\(self) \(#function)")
-        print("session read")
-        
         let inBuff = unwrapInboundIn(data)
-        let inStr = inBuff.getString(at: 0, length: inBuff.readableBytes) ?? ""
+        guard case .byteBuffer(let bytes) = inBuff.data else {
+            fatalError("Unexpected read type")
+        }
         
-        //        let session = Session(id: UUID(), channel: context.channel, playerID: nil)
-        //        let session = SessionStorage.first(where: {$0.channel.remoteAddress == context.channel.remoteAddress}) ??
-        //        Session(id: UUID(), channel: context.channel, playerID: nil)
+        guard case .channel = inBuff.type else {
+            context.fireErrorCaught(SSHServerError.invalidDataType)
+            return
+        }
         
+        let str = String(buffer: bytes)
+        print("session read: \(str)")
         var session = SessionStorage.first(where: { session in
             if let session = session as? MudSession {
                 return session.channel.remoteAddress == context.channel.remoteAddress
@@ -45,8 +49,8 @@ final class SessionHandler: ChannelInboundHandler {
                 return false
             }
         }) as? MudSession ?? MudSession(id: UUID(), channel: context.channel, playerID: nil)
-        
-        switch inStr {
+
+        switch str {
         case "\u{7F}": // backspace was pressed
             session = processBackspace(session, context: context)
             SessionStorage.replaceOrStoreSessionSync(session)
@@ -54,12 +58,9 @@ final class SessionHandler: ChannelInboundHandler {
         case "\n", "\r":  // an end-of-line character, time to send the command, for ssh?
             sendCommand(session, context: context)
         default:
-//            session.currentString += inStr
-//            context.writeAndFlush(self.wrapOutboundOut(inBuff), promise: nil)
-//            SessionStorage.replaceOrStoreSessionSync(session)
-            // for telnet
-            session.currentString = inStr.trimmingCharacters(in: .whitespacesAndNewlines)
-            sendCommand(session, context: context)
+            session.currentString += str
+            context.writeAndFlush(self.wrapOutboundOut(inBuff), promise: nil)
+            SessionStorage.replaceOrStoreSessionSync(session)
         }
     }
     
@@ -74,12 +75,13 @@ final class SessionHandler: ChannelInboundHandler {
         For a list of commands, use 'HELP'.
         """
         
-        let greenString = "\u{1B}[32m" + welcomeText + "\u{1B}[0m" + "\n> "
+        let sshWelcomeText = welcomeText.replacingOccurrences(of: "\n", with: "\n\r")
         
+        let greenString = "\u{1B}[32m" + sshWelcomeText + "\u{1B}[0m" + "\n\r> "
         let outBuf = context.channel.allocator.buffer(string: greenString)
-      //  print("session write")
-//        context.writeAndFlush(NIOAny(outBuf), promise: nil)
-        context.writeAndFlush(self.wrapOutboundOut(outBuf), promise: nil)
+        let channelData = SSHChannelData(byteBuffer: outBuf)
+        
+        context.writeAndFlush(self.wrapOutboundOut(channelData), promise: nil)
     }
     
     private func sendCommand(_ session: MudSession, context: ChannelHandlerContext) {
@@ -89,16 +91,21 @@ final class SessionHandler: ChannelInboundHandler {
     }
     
     private func processBackspace(_ session: MudSession, context: ChannelHandlerContext) -> MudSession {
-        print("process backspace")
+        print("process backspace: current string is \(session.currentString)")
         guard session.currentString.count > 0 else {
             return session
         }
         
         var updatedSession = session
+        var backspaceString = "\u{1B}[1D \u{1B}[1D"
+        let lastChar = session.currentString.last
+        if let lastChar, !lastChar.isASCII {
+            backspaceString = "\u{1B}[1D\u{1B}[1D \u{1B}[1D"
+        }
         updatedSession.currentString = String(session.currentString.dropLast(1))
-        let backspaceString = "\u{1B}[1D \u{1B}[1D"
         let outBuff = context.channel.allocator.buffer(string: backspaceString)
-        context.writeAndFlush(self.wrapOutboundOut(outBuff), promise: nil)
+        let channelData = SSHChannelData(byteBuffer: outBuff)
+        context.writeAndFlush(self.wrapOutboundOut(channelData), promise: nil)
         return updatedSession
     }
 }

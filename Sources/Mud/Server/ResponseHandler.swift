@@ -7,10 +7,11 @@
 
 import Foundation
 import NIO
+import NIOSSH
 
 final class ResponseHandler: ChannelInboundHandler {
     typealias InboundIn = [MudResponse]
-    typealias InboundOut = ByteBuffer
+    typealias InboundOut = SSHChannelData
     
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
 //        logger.trace("\(self) \(#function)")
@@ -20,21 +21,14 @@ final class ResponseHandler: ChannelInboundHandler {
         let responses = self.unwrapInboundIn(data)
         
         responses.forEach{ response in
-            
-        //        let greenString = "\u{1B}[32m" + "[Session ID: \(response.session.id) Player ID: \(response.session.playerID)]: " + response.message + "\u{1B}[0m" + "\n> "
-                let greenString = "\u{1B}[32m" + response.message + "\u{1B}[0m" + "\n> "
-                
-                let outBuff = context.channel.allocator.buffer(string: greenString)
-                
-                //context.writeAndFlush(wrapInboundOut(outBuff), promise: nil)
-            
+            let greenString = "\n\u{1B}[32m" + response.message + "\u{1B}[0m" + "\n> "
+            let sshGreenString = greenString.replacingOccurrences(of: "\n", with: "\r\n")
+            let outBuff = context.channel.allocator.buffer(string: sshGreenString)
             if let session = response.session as? MudSession {
-                print("response write to client")
-                session.channel.writeAndFlush(wrapInboundOut(outBuff), promise: nil)
-                
-                // Update the session, because we might now have a plyer i or any other settings changed from commands.
+                let channelData = SSHChannelData(byteBuffer: outBuff)
+                session.channel.writeAndFlush(self.wrapInboundOut(channelData), promise: nil)
+                    // Update the session, because we might now have a player id or any other settings changed from commands.
                 SessionStorage.replaceOrStoreSessionSync(response.session)
-                
                 if response.session.shouldClose {
                     print("Closing session: \(response.session)")
                     SessionStorage.deleteSession(response.session)
